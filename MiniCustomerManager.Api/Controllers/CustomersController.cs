@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MiniCustomerManager.Api.Models;
 using MiniCustomerManager.Api.Services;
 
 namespace MiniCustomerManager.Api.Controllers;
@@ -15,19 +16,19 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetCustomers(
+        [FromQuery] string? search, 
+        [FromQuery] string? sortBy = "id", 
+        [FromQuery] bool isDesc = false, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 4) // Mặc định 4 người/trang để dễ test
     {
-        var customers = _customerService.GetAll().Select(c => new
-        {
-            c.Id,
-            c.FullName,
-            c.MembershipTier,
-            c.JoinYear,
-            c.RewardPoints,
-            Status = _customerService.GetCustomerStatus(c.RewardPoints) 
-        });
+        // Kiểm tra dữ liệu đầu vào (tránh nhập số âm)
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 2;
 
-        return Ok(customers);
+        var result = _customerService.GetCustomers(search, sortBy, isDesc, page, pageSize);
+        return Ok(result);
     }
 
     [HttpGet("stats")]
